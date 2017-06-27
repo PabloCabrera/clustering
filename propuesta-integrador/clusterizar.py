@@ -14,9 +14,15 @@ from matplotlib import pyplot
 
 INPUT_DIR = "input"
 CELLS_DIR = "cells"
-CELL_SIZE = 24
-METRICS_CLUSTER = ["mean_r", "mean_g", "mean_b"]
-
+CELL_SIZE = 40
+METRICS_CLUSTER = [
+	#"mean_r", "mean_g", "mean_b",
+	#"min_r", "min_g", "min_b",
+	#"med_r", "med_g", "med_b",
+	#"max_r", "max_g", "max_b",
+	"min_hue", "max_hue",
+	"pos_x", "pos_y",
+	"seq_diff"]
 def main ():
 	analyzer = TestAnalyzer ()
 	cells_by_file = {}
@@ -28,14 +34,14 @@ def main ():
 		cell_row = 0
 		for cell in cells:
 			metrics = analyzer.analyze (cell)
+			#print "Metricas para celda:"
+			#print metrics
 			for col in xrange (0, len (METRICS_CLUSTER)):
 				cluster_data [cell_row, col] = metrics[METRICS_CLUSTER[col]]
 			cell_row += 1
-			# cell.save (join (CELLS_DIR, basename ("%s.%i.%i.jpg" % (filename, cell.x, cell.y))))
 
 		print ("Clustering %i cells  (%s)" % (len (cells), filename))
-		# groups = fclusterdata (cluster_data, 1.15)
-		centroids, groups = kmeans2 (cluster_data, 18)
+		centroids, groups = kmeans2 (cluster_data, 15)
 		num_clusters = max (groups)
 		print ("Found %i clusters" % num_clusters)
 		generate_cluster_images(groups, cells, filename)
@@ -65,10 +71,13 @@ def generate_cluster_images (clusters, cells, filename_prefix):
 		print "Cluster %i, elements: %i, square_size: %i" % (n_cluster, num_cells_in_cluster, square_size)
 		if num_cells_in_cluster > 0:
 			image = Image.new ("RGB", (square_size*cell_width, square_size*cell_height))
+			#image = Image.new ("RGB", cell.image_full.size)
 			for cell_number in xrange (0, len (cells_by_cluster[n_cluster])):
 				cell = cells_by_cluster [n_cluster][cell_number]
 				x = cell_width * (cell_number % square_size)
 				y = cell_height * (cell_number / square_size)
+				#x = cell.x
+				#y = cell.y
 				image.paste (cell.image, (x, y))
 			image.save (join (CELLS_DIR, basename ("%s.%i.jpg"% (filename_prefix, n_cluster))))
 
